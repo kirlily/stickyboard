@@ -1,0 +1,112 @@
+// tldraw 스토어와 Supabase Realtime을 연결하는 동기화 훅
+'use client'
+
+import { useEffect, useRef } from 'react'
+import { useEditor } from 'tldraw'
+import type { TLRecord, TLStoreSnapshot } from 'tldraw'
+import type { RecordsDiff } from '@tldraw/store'
+import { createClient } from '@/lib/supabase/client'
+import type { RealtimeChannel } from '@supabase/supabase-js'
+import { toast } from 'sonner'
+
+type SyncPayload = {
+  clientId: string
+  changes: RecordsDiff<TLRecord>
+}
+
+const SNAPSHOT_INTERVAL_MS = 30_000
+const SNAPSHOT_SIZE_WARNING_BYTES = 5 * 1024 * 1024 // 5MB
+
+export function useBoardSync(boardId: string, clientId: string) {
+  const editor = useEditor()
+  const channelRef = useRef<RealtimeChannel | null>(null)
+  const isSyncingRef = useRef(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+    let snapshotTimer: ReturnType<typeof setInterval>
+
+    // 1. 저장된 스냅샷 로드
+    async function loadSnapshot() {
+      const res = await fetch(`/api/boards/${boardId}/snapshot`)
+      const json = await res.json()
+      if (json.data) {
+        editor.loadSnapshot(json.data as TLStoreSnapshot)
+      }
+    }
+
+    // 2. 스냅샷 저장 (크기 경고 포함)
+    async function saveSnapshot() {
+      const snapshot = editor.getSnapshot()
+      const body = JSON.stringify(snapshot)
+      if (body.length > SNAPSHOT_SIZE_WARNING_BYTES) {
+        toast.warning('보드 크기가 큽니다. 불필요한 오브젝트를 정리해주세요.')
+      }
+      await fetch(`/api/boards/${boardId}/snapshot`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      })
+    }
+
+    // 3. Realtime 채널 구독
+    const channel = supabase.channel(`board-${boardId}`)
+    channelRef.current = channel
+
+    channel
+      .on<SyncPayload>('broadcast', { event: 'store-update' }, ({ payload }) => {
+        // 자신이 보낸 메시지는 무시
+        if (payload.clientId === clientId) return
+
+        const { added, updated, removed } = payload.changes
+        isSyncingRef.current = true
+        editor.store.mergeRemoteChanges(() => {
+          if (Object.keys(added).length) {
+            editor.store.put(Object.values(added) as TLRecord[])
+          }
+          if (Object.keys(updated).length) {
+            editor.store.put(Object.values(updated).map(([, to]) => to) as TLRecord[])
+          }
+          if (Object.keys(removed).length) {
+            editor.store.remove(Object.keys(removed) as TLRecord['id'][])
+          }
+        })
+        isSyncingRef.current = false
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await loadSnapshot()
+
+          // 4. 로컬 변경사항 브로드캐스트
+          editor.store.listen(
+            (entry) => {
+              if (isSyncingRef.current) return
+              channel.send({
+                type: 'broadcast',
+                event: 'store-update',
+                payload: {
+                  clientId,
+                  changes: entry.changes,
+                } satisfies SyncPayload,
+              })
+            },
+            { source: 'user', scope: 'document' }
+          )
+
+          // 5. 30초마다 스냅샷 저장
+          snapshotTimer = setInterval(saveSnapshot, SNAPSHOT_INTERVAL_MS)
+        } else if (status === 'CHANNEL_ERROR') {
+          toast.error('보드 연결에 실패했습니다. 새로고침해주세요.')
+        } else if (status === 'TIMED_OUT') {
+          toast.warning('연결 시간이 초과되었습니다. 재연결 중...')
+        }
+      })
+
+    return () => {
+      clearInterval(snapshotTimer)
+      saveSnapshot().catch(console.error)
+      channel.unsubscribe()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boardId, clientId])
+}

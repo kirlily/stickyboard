@@ -13,6 +13,7 @@ import { PresenceBar } from './PresenceBar'
 import { ReactionPanel, ReactionCount } from './ReactionPanel'
 import { CommentPin } from './CommentPin'
 import { CursorChat } from './CursorChat'
+import { OnboardingToast } from './OnboardingToast'
 import type { ReactionEmoji } from '@/lib/validations/reaction'
 
 type BoardSyncInnerProps = {
@@ -97,6 +98,8 @@ export function BoardSyncInner({
           onRemove={handleRemoveReaction}
         />
       </div>
+
+      <OnboardingToast />
     </>
   )
 }

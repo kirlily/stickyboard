@@ -1,11 +1,21 @@
-// 보드 커스텀 툴바 — 스티키 노트 추가, 색상 선택, 미니맵, 내보내기, 공유
+// 보드 커스텀 툴바 — 스티키 노트 추가, 색상 선택, 미니맵, 내보내기, 공유, 단축키
 'use client'
 
-import { useEditor } from 'tldraw'
+import { useEditor, useValue } from 'tldraw'
 import { useState } from 'react'
-import { StickerIcon, Download, Map, ChevronDown, Share2 } from 'lucide-react'
+import {
+  StickerIcon,
+  Download,
+  Map,
+  ChevronDown,
+  Share2,
+  Undo2,
+  Redo2,
+  Keyboard,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ShareModal } from './ShareModal'
+import { ShortcutsPanel } from './ShortcutsPanel'
 import { STICKY_COLORS, StickyColor, createStickyNote } from '@/lib/tldraw/customShapes'
 import { cn } from '@/lib/utils'
 
@@ -43,6 +53,10 @@ export function Toolbar({
   const [selectedColor, setSelectedColor] = useState<StickyColor>('yellow')
   const [showColorPicker, setShowColorPicker] = useState(false)
   const [showShare, setShowShare] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
+
+  const canUndo = useValue('canUndo', () => editor.getCanUndo(), [editor])
+  const canRedo = useValue('canRedo', () => editor.getCanRedo(), [editor])
 
   function addStickyNote() {
     const viewportCenter = editor.getViewportScreenCenter()
@@ -73,7 +87,31 @@ export function Toolbar({
 
   return (
     <>
-      <div className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-xl border bg-white px-2 py-1.5 shadow-md">
+      <div className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-xl border bg-white px-2 py-1.5 shadow-md dark:border-neutral-700 dark:bg-neutral-900">
+        {/* Undo / Redo */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => editor.undo()}
+          disabled={!canUndo}
+          title="실행 취소 (Ctrl+Z)"
+        >
+          <Undo2 className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => editor.redo()}
+          disabled={!canRedo}
+          title="다시 실행 (Ctrl+Y)"
+        >
+          <Redo2 className="h-3.5 w-3.5" />
+        </Button>
+
+        <div className="bg-border mx-1 h-5 w-px" />
+
         {/* 스티키 노트 추가 버튼 */}
         <div className="flex items-center">
           <Button
@@ -108,7 +146,7 @@ export function Toolbar({
 
         {/* 색상 팔레트 팝오버 */}
         {showColorPicker && (
-          <div className="absolute top-full left-0 mt-1 grid grid-cols-6 gap-1 rounded-lg border bg-white p-2 shadow-lg">
+          <div className="absolute top-full left-0 mt-1 grid grid-cols-6 gap-1 rounded-lg border bg-white p-2 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
             {(Object.keys(STICKY_COLORS) as StickyColor[]).map((color) => {
               const c = STICKY_COLORS[color]
               return (
@@ -169,6 +207,17 @@ export function Toolbar({
           <Share2 className="h-4 w-4" />
           <span className="text-xs">공유</span>
         </Button>
+
+        {/* 단축키 도움말 */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => setShowShortcuts(true)}
+          title="단축키 도움말 (?)"
+        >
+          <Keyboard className="h-3.5 w-3.5" />
+        </Button>
       </div>
 
       <ShareModal
@@ -177,6 +226,7 @@ export function Toolbar({
         open={showShare}
         onClose={() => setShowShare(false)}
       />
+      <ShortcutsPanel open={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </>
   )
 }
