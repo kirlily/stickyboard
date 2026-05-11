@@ -31,7 +31,7 @@ export function useReactions(boardId: string) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'reactions', filter: `board_id=eq.${boardId}` },
         () => {
-          queryClient.invalidateQueries({ queryKey })
+          queryClient.invalidateQueries({ queryKey: ['reactions', boardId] })
         }
       )
       .subscribe()
@@ -39,7 +39,7 @@ export function useReactions(boardId: string) {
     return () => {
       channel.unsubscribe()
     }
-  }, [boardId, queryClient, queryKey])
+  }, [boardId, queryClient])
 
   const addReaction = useMutation({
     mutationFn: async (input: CreateReactionInput) => {

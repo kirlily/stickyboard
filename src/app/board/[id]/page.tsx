@@ -1,5 +1,5 @@
 // 보드 캔버스 에디터 페이지
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { BoardCanvas } from '@/components/board/BoardCanvas'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
@@ -23,7 +23,8 @@ export default async function BoardPage({ params, searchParams }: Props) {
 
   if (!user) redirect('/login')
 
-  const { data: board } = await supabase.from('boards').select('id, name').eq('id', id).single()
+  const db = createAdminClient()
+  const { data: board } = await db.from('boards').select('id, name').eq('id', id).single()
 
   if (!board) redirect('/')
 

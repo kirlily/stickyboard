@@ -20,7 +20,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback
       return (
-        <div className="flex h-full flex-col items-center justify-center gap-3 p-8">
+        <div className="bg-background text-foreground flex h-full flex-col items-center justify-center gap-3 p-8">
           <p className="text-lg font-semibold">오류가 발생했습니다.</p>
           <p className="text-muted-foreground max-w-sm text-center text-sm">
             {this.state.error?.message ?? '알 수 없는 오류입니다.'}
