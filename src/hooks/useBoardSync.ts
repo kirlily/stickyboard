@@ -32,7 +32,7 @@ export function useBoardSync(boardId: string, clientId: string, initialTemplate?
     async function loadSnapshot() {
       const res = await fetch(`/api/boards/${boardId}/snapshot`)
       const json = await res.json()
-      if (json.data) {
+      if (json.data && typeof json.data === 'object' && 'document' in json.data) {
         try {
           editor.loadSnapshot(json.data as TLStoreSnapshot)
         } catch (err) {
@@ -87,18 +87,23 @@ export function useBoardSync(boardId: string, clientId: string, initialTemplate?
 
         const { added, updated, removed } = payload.changes
         isSyncingRef.current = true
-        editor.store.mergeRemoteChanges(() => {
-          if (Object.keys(added).length) {
-            editor.store.put(Object.values(added) as TLRecord[])
-          }
-          if (Object.keys(updated).length) {
-            editor.store.put(Object.values(updated).map(([, to]) => to) as TLRecord[])
-          }
-          if (Object.keys(removed).length) {
-            editor.store.remove(Object.keys(removed) as TLRecord['id'][])
-          }
-        })
-        isSyncingRef.current = false
+        try {
+          editor.store.mergeRemoteChanges(() => {
+            if (Object.keys(added).length) {
+              editor.store.put(Object.values(added) as TLRecord[])
+            }
+            if (Object.keys(updated).length) {
+              editor.store.put(Object.values(updated).map(([, to]) => to) as TLRecord[])
+            }
+            if (Object.keys(removed).length) {
+              editor.store.remove(Object.keys(removed) as TLRecord['id'][])
+            }
+          })
+        } catch (err) {
+          console.error('[useBoardSync] mergeRemoteChanges failed:', err)
+        } finally {
+          isSyncingRef.current = false
+        }
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {

@@ -3,7 +3,8 @@
 
 import { Tldraw, TLComponents } from 'tldraw'
 import 'tldraw/tldraw.css'
-import { useState, useCallback, useId } from 'react'
+import { useState, useCallback, useId, useMemo, useEffect } from 'react'
+import { toast } from 'sonner'
 import { BoardSyncInner } from './BoardSyncInner'
 import { CommentThread } from './CommentThread'
 import { HistoryPanel } from './HistoryPanel'
@@ -42,10 +43,51 @@ export function BoardCanvas({
     setCommentShapeId(shapeId)
   }
 
-  const components: TLComponents = {
-    Toolbar: null,
-    ...(showMinimap ? {} : { Minimap: null }),
-  }
+  const components = useMemo<TLComponents>(
+    () => ({
+      Toolbar: null,
+      ...(showMinimap ? {} : { Minimap: null }),
+      ErrorFallback: ({ error }: { error: unknown }) => {
+        useEffect(() => {
+          const message = error instanceof Error ? error.message : String(error)
+          console.error('[BoardCanvas] tldraw internal error:', error)
+          toast.error(`보드 오류: ${message}`, { duration: Infinity })
+        }, [error])
+        return (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#fff',
+              zIndex: 999,
+              gap: 12,
+            }}
+          >
+            <p style={{ fontSize: 14, color: '#666' }}>보드를 불러오는 중 오류가 발생했습니다.</p>
+            <button
+              style={{
+                padding: '8px 16px',
+                borderRadius: 6,
+                backgroundColor: '#3b82f6',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+              }}
+              onClick={() => window.location.reload()}
+            >
+              새로고침
+            </button>
+          </div>
+        )
+      },
+    }),
+    [showMinimap]
+  )
 
   const isCommentOpen = commentShapeId !== undefined
 
