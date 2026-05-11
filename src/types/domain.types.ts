@@ -13,7 +13,7 @@ export type Board = {
 export type BoardSnapshot = {
   id: string
   board_id: string
-  snapshot: Record<string, unknown>
+  snapshot: Record<string, unknown> | null
   label: string | null
   created_by: string | null
   created_at: string
