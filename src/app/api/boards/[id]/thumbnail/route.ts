@@ -5,10 +5,6 @@ import type { ApiResponse } from '@/types/api.types'
 
 type Params = { params: Promise<{ id: string }> }
 
-// thumbnail_url 컬럼은 migration 002에서 추가됨 — 적용 후 generate:types 실행 필요
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnySupabase = { from: (table: string) => any }
-
 export async function POST(req: Request, { params }: Params) {
   const { id } = await params
   const supabase = await createClient()
@@ -34,11 +30,10 @@ export async function POST(req: Request, { params }: Params) {
     data: { publicUrl },
   } = supabase.storage.from('board-images').getPublicUrl(path)
 
-  const sb = supabase as unknown as AnySupabase
-  const { error: updateError } = (await sb
+  const { error: updateError } = await supabase
     .from('boards')
     .update({ thumbnail_url: publicUrl })
-    .eq('id', id)) as { error: { message: string } | null }
+    .eq('id', id)
 
   if (updateError)
     return NextResponse.json({ data: null, error: updateError.message }, { status: 500 })
