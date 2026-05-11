@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/VibeCoding/hcc-reservation/src/lib/supabase/**)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "PowerShell(Set-Location d:\\\\VibeCoding\\\\stickyboard; $env:NODE_TLS_REJECT_UNAUTHORIZED=0; npx shadcn@latest add button input label dialog toast avatar dropdown-menu separator tabs --yes 2>&1)",
+      "PowerShell(Set-Location d:\\\\VibeCoding\\\\stickyboard; $env:NODE_TLS_REJECT_UNAUTHORIZED=0; npx shadcn@latest add button input label dialog sonner avatar dropdown-menu separator tabs --yes 2>&1)",
+      "Bash(python3 -c \"import json,sys; p=json.load\\(sys.stdin\\); print\\(p.get\\('version'\\)\\); print\\(list\\(p.get\\('exports',{}\\).keys\\(\\)\\)[:10]\\)\")",
+      "Bash(npm run *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git add *)",
+      "Bash(curl -s 'https://ewwclcqaxdduysexdtrc.supabase.co/rest/v1/boards?select=id&limit=1' -H 'apikey: sb_publishable_Nz4suvZbr9C9-Tw3rQA_PQ_bCVezXJe' -H 'Authorization: Bearer sb_publishable_Nz4suvZbr9C9-Tw3rQA_PQ_bCVezXJe')",
+      "Bash(curl -sk 'https://ewwclcqaxdduysexdtrc.supabase.co/rest/v1/boards?select=id&limit=1' -H 'apikey: sb_publishable_Nz4suvZbr9C9-Tw3rQA_PQ_bCVezXJe' -H 'Authorization: Bearer sb_publishable_Nz4suvZbr9C9-Tw3rQA_PQ_bCVezXJe')",
+      "Bash(curl -sk 'https://ewwclcqaxdduysexdtrc.supabase.co/rest/v1/board_snapshots?select=id&limit=1' -H 'apikey: sb_publishable_Nz4suvZbr9C9-Tw3rQA_PQ_bCVezXJe' -H 'Authorization: Bearer sb_publishable_Nz4suvZbr9C9-Tw3rQA_PQ_bCVezXJe')",
+      "Bash(curl -sk 'https://ewwclcqaxdduysexdtrc.supabase.co/rest/v1/reactions?select=id&limit=1' -H 'apikey: sb_publishable_Nz4suvZbr9C9-Tw3rQA_PQ_bCVezXJe' -H 'Authorization: Bearer sb_publishable_Nz4suvZbr9C9-Tw3rQA_PQ_bCVezXJe')",
+      "Bash(wait)",
+      "PowerShell(npm install -g supabase 2>&1)",
+      "PowerShell(supabase --version 2>&1)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(ls \"D:\\\\VibeCoding\\\\hcc-reservation\" 2>&1)",
+      "Read(//d/VibeCoding/hcc-reservation/**)",
+      "Bash(Remove-Item src/app/page.tsx)"
+    ]
+  }
+}

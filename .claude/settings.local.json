@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($p = Get-Content d:\\\\VibeCoding\\\\stickyboard\\\\node_modules\\\\tldraw\\\\package.json | ConvertFrom-Json; Write-Host $p.version; ls d:\\\\VibeCoding\\\\stickyboard\\\\node_modules\\\\tldraw\\\\ | Select-Object -First 20 Name)"
+    ]
+  }
+}
