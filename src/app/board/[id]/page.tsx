@@ -1,15 +1,9 @@
 // 보드 캔버스 에디터 페이지
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import dynamic from 'next/dynamic'
+import { BoardCanvasNoSSR } from '@/components/board/BoardCanvasNoSSR'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import type { TemplateName } from '@/lib/tldraw/templates'
-
-// tldraw는 브라우저 전용 — SSR 없이 클라이언트에서만 렌더링
-const BoardCanvas = dynamic(
-  () => import('@/components/board/BoardCanvas').then((m) => ({ default: m.BoardCanvas })),
-  { ssr: false }
-)
 
 const VALID_TEMPLATES = new Set<TemplateName>(['retro', 'brainstorm', 'kanban'])
 
@@ -43,7 +37,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
   return (
     <ErrorBoundary>
       <div className="bg-background h-screen w-screen overflow-hidden">
-        <BoardCanvas
+        <BoardCanvasNoSSR
           boardId={id}
           boardName={board.name}
           userId={user.id}
