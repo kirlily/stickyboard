@@ -1,5 +1,5 @@
 // 댓글 수정 및 삭제 API Route
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { updateCommentSchema } from '@/lib/validations/comment'
 import type { ApiResponse } from '@/types/api.types'
@@ -25,7 +25,8 @@ export async function PUT(req: Request, { params }: Params) {
     )
   }
 
-  const { data, error } = await supabase
+  const db = createAdminClient()
+  const { data, error } = await db
     .from('comments')
     .update({
       ...(parsed.data.content !== undefined && { content: parsed.data.content }),
@@ -53,7 +54,8 @@ export async function DELETE(_req: Request, { params }: Params) {
   if (!user)
     return NextResponse.json<ApiResponse<null>>({ data: null, error: '인증 필요' }, { status: 401 })
 
-  const { error } = await supabase.from('comments').delete().eq('id', cid).eq('author_id', user.id)
+  const db = createAdminClient()
+  const { error } = await db.from('comments').delete().eq('id', cid).eq('author_id', user.id)
 
   if (error)
     return NextResponse.json<ApiResponse<null>>(

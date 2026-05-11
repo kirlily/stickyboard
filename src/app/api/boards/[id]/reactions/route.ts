@@ -1,5 +1,5 @@
 // 반응 목록 조회 및 추가 API Route
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { createReactionSchema } from '@/lib/validations/reaction'
 import type { ApiResponse } from '@/types/api.types'
@@ -16,7 +16,8 @@ export async function GET(_req: Request, { params }: Params) {
   if (!user)
     return NextResponse.json<ApiResponse<null>>({ data: null, error: '인증 필요' }, { status: 401 })
 
-  const { data, error } = await supabase.from('reactions').select('*').eq('board_id', boardId)
+  const db = createAdminClient()
+  const { data, error } = await db.from('reactions').select('*').eq('board_id', boardId)
 
   if (error)
     return NextResponse.json<ApiResponse<null>>(
@@ -45,7 +46,8 @@ export async function POST(req: Request, { params }: Params) {
   }
 
   // 이미 반응이 있으면 upsert (unique constraint: board_id, shape_id, user_id, emoji)
-  const { data, error } = await supabase
+  const db = createAdminClient()
+  const { data, error } = await db
     .from('reactions')
     .upsert({
       board_id: boardId,

@@ -1,5 +1,5 @@
 // 개별 보드 조회, 수정, 삭제 API Route
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import type { ApiResponse } from '@/types/api.types'
@@ -16,7 +16,8 @@ export async function GET(_req: Request, { params }: Params) {
   if (!user)
     return NextResponse.json<ApiResponse<null>>({ data: null, error: '인증 필요' }, { status: 401 })
 
-  const { data, error } = await supabase.from('boards').select('*').eq('id', id).single()
+  const db = createAdminClient()
+  const { data, error } = await db.from('boards').select('*').eq('id', id).single()
 
   if (error || !data)
     return NextResponse.json<ApiResponse<null>>(
@@ -43,7 +44,8 @@ export async function PUT(req: Request, { params }: Params) {
       { status: 400 }
     )
 
-  const { data, error } = await supabase
+  const db = createAdminClient()
+  const { data, error } = await db
     .from('boards')
     .update({ name: parsed.data.name })
     .eq('id', id)
@@ -67,7 +69,8 @@ export async function DELETE(_req: Request, { params }: Params) {
   if (!user)
     return NextResponse.json<ApiResponse<null>>({ data: null, error: '인증 필요' }, { status: 401 })
 
-  const { error } = await supabase.from('boards').delete().eq('id', id)
+  const db = createAdminClient()
+  const { error } = await db.from('boards').delete().eq('id', id)
   if (error)
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: error.message },

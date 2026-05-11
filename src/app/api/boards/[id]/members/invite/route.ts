@@ -1,5 +1,5 @@
 // 보드 초대 링크 생성 API Route
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { inviteMemberSchema } from '@/lib/validations/member'
 import type { ApiResponse } from '@/types/api.types'
@@ -16,7 +16,8 @@ export async function POST(req: Request, { params }: Params) {
   if (!user)
     return NextResponse.json<ApiResponse<null>>({ data: null, error: '인증 필요' }, { status: 401 })
 
-  const { data: member } = await supabase
+  const db = createAdminClient()
+  const { data: member } = await db
     .from('board_members')
     .select('role')
     .eq('board_id', id)
@@ -36,7 +37,7 @@ export async function POST(req: Request, { params }: Params) {
     )
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('board_invites')
     .insert({ board_id: id, role: parsed.data.role })
     .select()

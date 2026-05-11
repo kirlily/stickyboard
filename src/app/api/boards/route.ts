@@ -1,5 +1,5 @@
 // 보드 목록 조회 및 생성 API Route
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { createBoardSchema } from '@/lib/validations/board'
 import type { ApiResponse } from '@/types/api.types'
@@ -13,7 +13,8 @@ export async function GET() {
   if (!user)
     return NextResponse.json<ApiResponse<null>>({ data: null, error: '인증 필요' }, { status: 401 })
 
-  const { data, error } = await supabase
+  const db = createAdminClient()
+  const { data, error } = await db
     .from('boards')
     .select('id, name, created_by, created_at, updated_at')
     .order('updated_at', { ascending: false })
@@ -43,7 +44,8 @@ export async function POST(req: Request) {
     )
   }
 
-  const { data: board, error } = await supabase
+  const db = createAdminClient()
+  const { data: board, error } = await db
     .from('boards')
     .insert({ name: parsed.data.name, created_by: user.id })
     .select()
@@ -56,7 +58,7 @@ export async function POST(req: Request) {
     )
 
   // 생성자를 owner로 board_members에 추가
-  await supabase.from('board_members').insert({
+  await db.from('board_members').insert({
     board_id: board.id,
     user_id: user.id,
     role: 'owner',

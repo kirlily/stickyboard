@@ -1,5 +1,5 @@
 // 보드 스냅샷 조회 및 저장 API Route
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { ApiResponse } from '@/types/api.types'
 import type { Json } from '@/types/database.types'
@@ -15,7 +15,8 @@ export async function GET(_req: Request, { params }: Params) {
   if (!user)
     return NextResponse.json<ApiResponse<null>>({ data: null, error: '인증 필요' }, { status: 401 })
 
-  const { data, error } = await supabase.from('boards').select('snapshot').eq('id', id).single()
+  const db = createAdminClient()
+  const { data, error } = await db.from('boards').select('snapshot').eq('id', id).single()
 
   if (error || !data)
     return NextResponse.json<ApiResponse<null>>(
@@ -39,7 +40,8 @@ export async function PUT(req: Request, { params }: Params) {
 
   const snapshot: unknown = await req.json()
 
-  const { error } = await supabase
+  const db = createAdminClient()
+  const { error } = await db
     .from('boards')
     .update({ snapshot: snapshot as Json })
     .eq('id', id)

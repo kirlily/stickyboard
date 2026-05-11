@@ -1,5 +1,5 @@
 // 댓글 목록 조회 및 생성 API Route
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { createCommentSchema } from '@/lib/validations/comment'
 import type { ApiResponse } from '@/types/api.types'
@@ -19,7 +19,8 @@ export async function GET(req: Request, { params }: Params) {
   const { searchParams } = new URL(req.url)
   const shapeId = searchParams.get('shape_id')
 
-  let query = supabase
+  const db = createAdminClient()
+  let query = db
     .from('comments')
     .select('*')
     .eq('board_id', boardId)
@@ -56,7 +57,8 @@ export async function POST(req: Request, { params }: Params) {
     )
   }
 
-  const { data, error } = await supabase
+  const db = createAdminClient()
+  const { data, error } = await db
     .from('comments')
     .insert({
       board_id: boardId,

@@ -1,5 +1,5 @@
 // 특정 버전 스냅샷 상세 조회 (복원용)
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { ApiResponse } from '@/types/api.types'
 import type { BoardSnapshot } from '@/types/domain.types'
@@ -15,7 +15,8 @@ export async function GET(_req: Request, { params }: Params) {
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ data: null, error: 'Unauthorized' }, { status: 401 })
 
-  const { data, error } = await supabase
+  const db = createAdminClient()
+  const { data, error } = await db
     .from('board_snapshots')
     .select('*')
     .eq('id', sid)

@@ -1,5 +1,5 @@
 // 보드 멤버 목록 조회 API Route
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { ApiResponse } from '@/types/api.types'
 import type { BoardMember } from '@/types/domain.types'
@@ -15,7 +15,8 @@ export async function GET(_req: Request, { params }: Params) {
   if (!user)
     return NextResponse.json<ApiResponse<null>>({ data: null, error: '인증 필요' }, { status: 401 })
 
-  const { data, error } = await supabase
+  const db = createAdminClient()
+  const { data, error } = await db
     .from('board_members')
     .select('*')
     .eq('board_id', id)

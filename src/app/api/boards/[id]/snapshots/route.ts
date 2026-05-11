@@ -1,5 +1,5 @@
 // 보드 버전 히스토리 API — 스냅샷 목록 조회 및 저장
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { ApiResponse } from '@/types/api.types'
 import type { BoardSnapshot } from '@/types/domain.types'
@@ -16,7 +16,8 @@ export async function GET(_req: Request, { params }: Params) {
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ data: null, error: 'Unauthorized' }, { status: 401 })
 
-  const { data, error } = await supabase
+  const db = createAdminClient()
+  const { data, error } = await db
     .from('board_snapshots')
     .select('id, board_id, label, created_by, created_at')
     .eq('board_id', id)
@@ -42,7 +43,8 @@ export async function POST(req: Request, { params }: Params) {
   const body = await req.json()
   const { snapshot, label } = body as { snapshot: Record<string, unknown>; label?: string }
 
-  const { data, error } = await supabase
+  const db = createAdminClient()
+  const { data, error } = await db
     .from('board_snapshots')
     .insert({
       board_id: id,

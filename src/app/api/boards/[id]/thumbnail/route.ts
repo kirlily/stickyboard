@@ -1,5 +1,5 @@
 // 보드 썸네일 저장 API — Supabase Storage board-images 버킷 사용
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { ApiResponse } from '@/types/api.types'
 
@@ -18,8 +18,9 @@ export async function POST(req: Request, { params }: Params) {
   const file = formData.get('file') as File | null
   if (!file) return NextResponse.json({ data: null, error: 'No file' }, { status: 400 })
 
+  const db = createAdminClient()
   const path = `thumbnails/${id}.png`
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await db.storage
     .from('board-images')
     .upload(path, file, { upsert: true, contentType: 'image/png' })
 
@@ -28,9 +29,9 @@ export async function POST(req: Request, { params }: Params) {
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from('board-images').getPublicUrl(path)
+  } = db.storage.from('board-images').getPublicUrl(path)
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('boards')
     .update({ thumbnail_url: publicUrl })
     .eq('id', id)

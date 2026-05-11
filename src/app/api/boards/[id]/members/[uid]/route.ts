@@ -1,5 +1,5 @@
 // 보드 멤버 권한 변경 및 제거 API Route
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { updateMemberRoleSchema } from '@/lib/validations/member'
 import type { ApiResponse } from '@/types/api.types'
@@ -16,7 +16,8 @@ export async function PUT(req: Request, { params }: Params) {
   if (!user)
     return NextResponse.json<ApiResponse<null>>({ data: null, error: '인증 필요' }, { status: 401 })
 
-  const { data: myMember } = await supabase
+  const db = createAdminClient()
+  const { data: myMember } = await db
     .from('board_members')
     .select('role')
     .eq('board_id', id)
@@ -36,7 +37,7 @@ export async function PUT(req: Request, { params }: Params) {
     )
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('board_members')
     .update({ role: parsed.data.role })
     .eq('board_id', id)
@@ -61,7 +62,8 @@ export async function DELETE(_req: Request, { params }: Params) {
   if (!user)
     return NextResponse.json<ApiResponse<null>>({ data: null, error: '인증 필요' }, { status: 401 })
 
-  const { data: myMember } = await supabase
+  const db = createAdminClient()
+  const { data: myMember } = await db
     .from('board_members')
     .select('role')
     .eq('board_id', id)
@@ -76,11 +78,7 @@ export async function DELETE(_req: Request, { params }: Params) {
     return NextResponse.json<ApiResponse<null>>({ data: null, error: '권한 없음' }, { status: 403 })
   }
 
-  const { error } = await supabase
-    .from('board_members')
-    .delete()
-    .eq('board_id', id)
-    .eq('user_id', uid)
+  const { error } = await db.from('board_members').delete().eq('board_id', id).eq('user_id', uid)
 
   if (error)
     return NextResponse.json<ApiResponse<null>>(

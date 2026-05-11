@@ -1,5 +1,5 @@
 // 이미지 업로드 API Route — Supabase Storage에 저장 후 공개 URL 반환
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { ApiResponse } from '@/types/api.types'
 
@@ -42,7 +42,8 @@ export async function POST(req: Request) {
   const path = `${user.id}/${Date.now()}.${ext}`
   const arrayBuffer = await file.arrayBuffer()
 
-  const { error } = await supabase.storage
+  const db = createAdminClient()
+  const { error } = await db.storage
     .from('board-images')
     .upload(path, arrayBuffer, { contentType: file.type })
 
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
       { status: 500 }
     )
 
-  const { data: urlData } = supabase.storage.from('board-images').getPublicUrl(path)
+  const { data: urlData } = db.storage.from('board-images').getPublicUrl(path)
   return NextResponse.json<ApiResponse<{ url: string }>>({
     data: { url: urlData.publicUrl },
     error: null,
