@@ -52,7 +52,13 @@ export function BoardCanvas({
   return (
     <div className="flex h-full w-full overflow-hidden">
       <div className="relative flex-1">
-        <Tldraw shapeUtils={customShapeUtils} components={components}>
+        <Tldraw
+          shapeUtils={customShapeUtils}
+          components={components}
+          onMount={(editor) => {
+            editor.user.updateUserPreferences({ colorScheme: 'light' })
+          }}
+        >
           <BoardSyncInner
             boardId={boardId}
             boardName={boardName}

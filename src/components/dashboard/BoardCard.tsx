@@ -94,7 +94,7 @@ export function BoardCard({ board }: BoardCardProps) {
       <div className="group relative flex flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
         {/* 썸네일 */}
         <button
-          className="bg-muted/50 group-hover:bg-muted relative flex h-32 items-center justify-center overflow-hidden rounded-lg transition-colors"
+          className="bg-muted/50 group-hover:bg-muted relative flex h-32 cursor-pointer items-center justify-center overflow-hidden rounded-lg transition-colors"
           onClick={() => router.push(`/board/${board.id}`)}
         >
           {board.thumbnail_url ? (
