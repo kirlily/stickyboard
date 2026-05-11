@@ -3,18 +3,23 @@
 
 import { useEditor, useValue } from 'tldraw'
 import type { TLShapeId } from 'tldraw'
+import { useEffect, useState } from 'react'
 import { useBoardSync } from '@/hooks/useBoardSync'
 import { usePresence } from '@/hooks/usePresence'
 import { useComments } from '@/hooks/useComments'
 import { useReactions } from '@/hooks/useReactions'
 import { CollaboratorCursors } from './CollaboratorCursors'
 import { Toolbar } from './Toolbar'
+import { MobileToolbar } from './MobileToolbar'
 import { PresenceBar } from './PresenceBar'
 import { ReactionPanel, ReactionCount } from './ReactionPanel'
 import { CommentPin } from './CommentPin'
 import { CursorChat } from './CursorChat'
 import { OnboardingToast } from './OnboardingToast'
 import type { ReactionEmoji } from '@/lib/validations/reaction'
+import type { TemplateName } from '@/lib/tldraw/templates'
+
+const MOBILE_BREAKPOINT = 768
 
 type BoardSyncInnerProps = {
   boardId: string
@@ -25,6 +30,8 @@ type BoardSyncInnerProps = {
   onToggleMinimap: () => void
   showMinimap: boolean
   onOpenComments: (shapeId: string | null) => void
+  onOpenHistory: () => void
+  initialTemplate?: TemplateName | undefined
 }
 
 export function BoardSyncInner({
@@ -36,10 +43,27 @@ export function BoardSyncInner({
   onToggleMinimap,
   showMinimap,
   onOpenComments,
+  onOpenHistory,
+  initialTemplate,
 }: BoardSyncInnerProps) {
   const editor = useEditor()
+  const [isMobile, setIsMobile] = useState(false)
 
-  useBoardSync(boardId, clientId)
+  useEffect(() => {
+    function check() {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  // 모바일에서는 편집 불가 (읽기 전용)
+  useEffect(() => {
+    editor.updateInstanceState({ isReadonly: isMobile })
+  }, [editor, isMobile])
+
+  useBoardSync(boardId, clientId, initialTemplate)
 
   const presences = usePresence({ boardId, userId, name: authorName, color: userColor })
   const { comments } = useComments(boardId)
@@ -58,13 +82,18 @@ export function BoardSyncInner({
 
   return (
     <>
-      <Toolbar
-        boardId={boardId}
-        userId={userId}
-        authorName={authorName}
-        onToggleMinimap={onToggleMinimap}
-        showMinimap={showMinimap}
-      />
+      {isMobile ? (
+        <MobileToolbar />
+      ) : (
+        <Toolbar
+          boardId={boardId}
+          userId={userId}
+          authorName={authorName}
+          onToggleMinimap={onToggleMinimap}
+          showMinimap={showMinimap}
+          onOpenHistory={onOpenHistory}
+        />
+      )}
       <PresenceBar myName={authorName} myColor={userColor} presences={presences} />
       <CollaboratorCursors presences={presences} />
       <CursorChat boardId={boardId} userId={userId} name={authorName} color={userColor} />

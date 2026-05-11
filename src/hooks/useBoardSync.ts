@@ -8,6 +8,8 @@ import type { RecordsDiff } from '@tldraw/store'
 import { createClient } from '@/lib/supabase/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { toast } from 'sonner'
+import { applyTemplate } from '@/lib/tldraw/templates'
+import type { TemplateName } from '@/lib/tldraw/templates'
 
 type SyncPayload = {
   clientId: string
@@ -17,7 +19,7 @@ type SyncPayload = {
 const SNAPSHOT_INTERVAL_MS = 30_000
 const SNAPSHOT_SIZE_WARNING_BYTES = 5 * 1024 * 1024 // 5MB
 
-export function useBoardSync(boardId: string, clientId: string) {
+export function useBoardSync(boardId: string, clientId: string, initialTemplate?: TemplateName) {
   const editor = useEditor()
   const channelRef = useRef<RealtimeChannel | null>(null)
   const isSyncingRef = useRef(false)
@@ -26,16 +28,18 @@ export function useBoardSync(boardId: string, clientId: string) {
     const supabase = createClient()
     let snapshotTimer: ReturnType<typeof setInterval>
 
-    // 1. 저장된 스냅샷 로드
+    // 1. 저장된 스냅샷 로드 (없으면 템플릿 적용)
     async function loadSnapshot() {
       const res = await fetch(`/api/boards/${boardId}/snapshot`)
       const json = await res.json()
       if (json.data) {
         editor.loadSnapshot(json.data as TLStoreSnapshot)
+      } else if (initialTemplate) {
+        applyTemplate(editor, initialTemplate)
       }
     }
 
-    // 2. 스냅샷 저장 (크기 경고 포함)
+    // 2. 스냅샷 저장 + 썸네일 생성 (크기 경고 포함)
     async function saveSnapshot() {
       const snapshot = editor.getSnapshot()
       const body = JSON.stringify(snapshot)
@@ -47,6 +51,19 @@ export function useBoardSync(boardId: string, clientId: string) {
         headers: { 'Content-Type': 'application/json' },
         body,
       })
+
+      // 썸네일 생성 (도형이 있을 때만)
+      const shapes = editor.getCurrentPageShapes()
+      if (shapes.length > 0) {
+        try {
+          const result = await editor.toImage(shapes, { format: 'png', scale: 0.3 })
+          const fd = new FormData()
+          fd.append('file', result.blob, 'thumbnail.png')
+          await fetch(`/api/boards/${boardId}/thumbnail`, { method: 'POST', body: fd })
+        } catch {
+          // 썸네일 생성 실패는 무시
+        }
+      }
     }
 
     // 3. Realtime 채널 구독

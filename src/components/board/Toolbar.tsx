@@ -12,12 +12,24 @@ import {
   Undo2,
   Redo2,
   Keyboard,
+  Timer,
+  Vote,
+  History,
+  Network,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ShareModal } from './ShareModal'
 import { ShortcutsPanel } from './ShortcutsPanel'
-import { STICKY_COLORS, StickyColor, createStickyNote } from '@/lib/tldraw/customShapes'
+import {
+  STICKY_COLORS,
+  StickyColor,
+  createStickyNote,
+  createTimer,
+  createPoll,
+} from '@/lib/tldraw/customShapes'
+import { applyMindmapLayout } from '@/lib/tldraw/mindmapLayout'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 const COLOR_NAMES: Record<StickyColor, string> = {
   yellow: '노랑',
@@ -40,6 +52,7 @@ type ToolbarProps = {
   authorName: string
   onToggleMinimap: () => void
   showMinimap: boolean
+  onOpenHistory: () => void
 }
 
 export function Toolbar({
@@ -48,6 +61,7 @@ export function Toolbar({
   authorName,
   onToggleMinimap,
   showMinimap,
+  onOpenHistory,
 }: ToolbarProps) {
   const editor = useEditor()
   const [selectedColor, setSelectedColor] = useState<StickyColor>('yellow')
@@ -69,6 +83,25 @@ export function Toolbar({
     })
     editor.createShape(shape)
     editor.setEditingShape(shape.id)
+  }
+
+  function addTimer() {
+    const viewportCenter = editor.getViewportScreenCenter()
+    const canvasPoint = editor.screenToPage(viewportCenter)
+    const shape = createTimer({ x: canvasPoint.x - 100, y: canvasPoint.y - 110 })
+    editor.createShape(shape)
+  }
+
+  function addPoll() {
+    const viewportCenter = editor.getViewportScreenCenter()
+    const canvasPoint = editor.screenToPage(viewportCenter)
+    const shape = createPoll({ x: canvasPoint.x - 130, y: canvasPoint.y - 110 })
+    editor.createShape(shape)
+  }
+
+  function applyLayout() {
+    const applied = applyMindmapLayout(editor)
+    if (!applied) toast.info('화살표로 연결된 도형이 없습니다.')
   }
 
   async function exportPng() {
@@ -168,6 +201,42 @@ export function Toolbar({
           </div>
         )}
 
+        {/* 타이머 위젯 */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={addTimer}
+          className="gap-1.5 px-2.5"
+          title="타이머 추가"
+        >
+          <Timer className="h-4 w-4" />
+          <span className="text-xs">타이머</span>
+        </Button>
+
+        {/* 투표 위젯 */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={addPoll}
+          className="gap-1.5 px-2.5"
+          title="투표 추가"
+        >
+          <Vote className="h-4 w-4" />
+          <span className="text-xs">투표</span>
+        </Button>
+
+        {/* 마인드맵 레이아웃 */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={applyLayout}
+          className="gap-1.5 px-2.5"
+          title="마인드맵 자동 레이아웃"
+        >
+          <Network className="h-4 w-4" />
+          <span className="text-xs">레이아웃</span>
+        </Button>
+
         <div className="bg-border mx-1 h-5 w-px" />
 
         {/* 미니맵 토글 */}
@@ -206,6 +275,17 @@ export function Toolbar({
         >
           <Share2 className="h-4 w-4" />
           <span className="text-xs">공유</span>
+        </Button>
+
+        {/* 히스토리 */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={onOpenHistory}
+          title="버전 히스토리"
+        >
+          <History className="h-3.5 w-3.5" />
         </Button>
 
         {/* 단축키 도움말 */}

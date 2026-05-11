@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { StickerIcon, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import Image from 'next/image'
 import { useState, useRef, useEffect } from 'react'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -93,10 +94,20 @@ export function BoardCard({ board }: BoardCardProps) {
       <div className="group relative flex flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
         {/* 썸네일 */}
         <button
-          className="bg-muted/50 group-hover:bg-muted flex h-32 items-center justify-center rounded-lg transition-colors"
+          className="bg-muted/50 group-hover:bg-muted relative flex h-32 items-center justify-center overflow-hidden rounded-lg transition-colors"
           onClick={() => router.push(`/board/${board.id}`)}
         >
-          <StickerIcon className="text-muted-foreground/50 h-8 w-8" />
+          {board.thumbnail_url ? (
+            <Image
+              src={board.thumbnail_url}
+              alt={board.name}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          ) : (
+            <StickerIcon className="text-muted-foreground/50 h-8 w-8" />
+          )}
         </button>
 
         {/* 하단 이름 + 메뉴 */}
