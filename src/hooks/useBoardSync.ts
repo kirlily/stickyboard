@@ -33,9 +33,19 @@ export function useBoardSync(boardId: string, clientId: string, initialTemplate?
       const res = await fetch(`/api/boards/${boardId}/snapshot`)
       const json = await res.json()
       if (json.data) {
-        editor.loadSnapshot(json.data as TLStoreSnapshot)
+        try {
+          editor.loadSnapshot(json.data as TLStoreSnapshot)
+        } catch (err) {
+          // 손상된 스냅샷 — 빈 캔버스에서 시작
+          console.error('[useBoardSync] loadSnapshot failed:', err)
+          toast.error('보드 데이터를 불러오지 못했습니다. 새 보드로 시작합니다.')
+        }
       } else if (initialTemplate) {
-        applyTemplate(editor, initialTemplate)
+        try {
+          applyTemplate(editor, initialTemplate)
+        } catch (err) {
+          console.error('[useBoardSync] applyTemplate failed:', err)
+        }
       }
     }
 
@@ -92,26 +102,31 @@ export function useBoardSync(boardId: string, clientId: string, initialTemplate?
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          await loadSnapshot()
+          try {
+            await loadSnapshot()
 
-          // 4. 로컬 변경사항 브로드캐스트
-          editor.store.listen(
-            (entry) => {
-              if (isSyncingRef.current) return
-              channel.send({
-                type: 'broadcast',
-                event: 'store-update',
-                payload: {
-                  clientId,
-                  changes: entry.changes,
-                } satisfies SyncPayload,
-              })
-            },
-            { source: 'user', scope: 'document' }
-          )
+            // 4. 로컬 변경사항 브로드캐스트
+            editor.store.listen(
+              (entry) => {
+                if (isSyncingRef.current) return
+                channel.send({
+                  type: 'broadcast',
+                  event: 'store-update',
+                  payload: {
+                    clientId,
+                    changes: entry.changes,
+                  } satisfies SyncPayload,
+                })
+              },
+              { source: 'user', scope: 'document' }
+            )
 
-          // 5. 30초마다 스냅샷 저장
-          snapshotTimer = setInterval(saveSnapshot, SNAPSHOT_INTERVAL_MS)
+            // 5. 30초마다 스냅샷 저장
+            snapshotTimer = setInterval(saveSnapshot, SNAPSHOT_INTERVAL_MS)
+          } catch (err) {
+            console.error('[useBoardSync] subscribe setup failed:', err)
+            toast.error('보드 초기화에 실패했습니다. 새로고침해주세요.')
+          }
         } else if (status === 'CHANNEL_ERROR') {
           toast.error('보드 연결에 실패했습니다. 새로고침해주세요.')
         } else if (status === 'TIMED_OUT') {
