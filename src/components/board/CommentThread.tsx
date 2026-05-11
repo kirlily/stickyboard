@@ -4,7 +4,16 @@
 import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { ko } from 'date-fns/locale'
-import { X, MessageSquare, Check, Trash2, CornerDownRight } from 'lucide-react'
+import {
+  X,
+  MessageSquare,
+  Check,
+  Trash2,
+  CornerDownRight,
+  RotateCcw,
+  Eye,
+  EyeOff,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useComments } from '@/hooks/useComments'
@@ -22,11 +31,14 @@ export function CommentThread({ boardId, userId, focusedShapeId, onClose }: Comm
   const [newContent, setNewContent] = useState('')
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState('')
+  const [showResolved, setShowResolved] = useState(false)
 
-  // 최상위 댓글만 (parent_id === null)
-  const roots = comments.filter(
+  const allRoots = comments.filter(
     (c) => !c.parent_id && (!focusedShapeId || c.shape_id === focusedShapeId)
   )
+  const resolvedCount = allRoots.filter((c) => c.resolved).length
+  // 해결된 댓글 표시 여부에 따라 필터
+  const roots = showResolved ? allRoots : allRoots.filter((c) => !c.resolved)
   // 자식 댓글 가져오기
   function getReplies(parentId: string): Comment[] {
     return comments.filter((c) => c.parent_id === parentId)
@@ -60,9 +72,22 @@ export function CommentThread({ boardId, userId, focusedShapeId, onClose }: Comm
           <MessageSquare className="h-4 w-4" />
           <span className="text-sm font-medium">{focusedShapeId ? '도형 댓글' : '전체 댓글'}</span>
         </div>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {resolvedCount > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              title={showResolved ? '해결된 댓글 숨기기' : `해결된 댓글 보기 (${resolvedCount})`}
+              onClick={() => setShowResolved((v) => !v)}
+            >
+              {showResolved ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* 댓글 목록 */}
@@ -77,7 +102,7 @@ export function CommentThread({ boardId, userId, focusedShapeId, onClose }: Comm
             comment={comment}
             replies={getReplies(comment.id)}
             userId={userId}
-            onResolve={(id) => updateComment.mutate({ id, resolved: true })}
+            onResolve={(id, resolved) => updateComment.mutate({ id, resolved })}
             onDelete={(id) => deleteComment.mutate(id)}
             onReply={() => setReplyTo(comment.id)}
             showReplyInput={replyTo === comment.id}
@@ -113,7 +138,7 @@ type CommentItemProps = {
   comment: Comment
   replies: Comment[]
   userId: string
-  onResolve: (id: string) => void
+  onResolve: (id: string, resolved: boolean) => void
   onDelete: (id: string) => void
   onReply: () => void
   showReplyInput: boolean
@@ -150,11 +175,19 @@ function CommentItem({
             >
               <CornerDownRight className="h-3 w-3" />
             </button>
-            {!comment.resolved && (
+            {comment.resolved ? (
               <button
-                onClick={() => onResolve(comment.id)}
+                onClick={() => onResolve(comment.id, false)}
+                className="rounded p-0.5 text-green-600 hover:text-orange-500"
+                title="해결 취소"
+              >
+                <RotateCcw className="h-3 w-3" />
+              </button>
+            ) : (
+              <button
+                onClick={() => onResolve(comment.id, true)}
                 className="text-muted-foreground rounded p-0.5 hover:text-green-600"
-                title="해결됨"
+                title="해결됨으로 표시"
               >
                 <Check className="h-3 w-3" />
               </button>

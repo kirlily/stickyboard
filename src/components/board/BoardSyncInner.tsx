@@ -4,6 +4,8 @@
 import { useEditor, useValue } from 'tldraw'
 import type { TLShapeId } from 'tldraw'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
 import { useBoardSync } from '@/hooks/useBoardSync'
 import { usePresence } from '@/hooks/usePresence'
 import { useComments } from '@/hooks/useComments'
@@ -16,6 +18,7 @@ import { ReactionPanel, ReactionCount } from './ReactionPanel'
 import { CommentPin } from './CommentPin'
 import { CursorChat } from './CursorChat'
 import { OnboardingToast } from './OnboardingToast'
+import { PresentationMode } from './PresentationMode'
 import type { ReactionEmoji } from '@/lib/validations/reaction'
 import type { TemplateName } from '@/lib/tldraw/templates'
 
@@ -23,6 +26,7 @@ const MOBILE_BREAKPOINT = 768
 
 type BoardSyncInnerProps = {
   boardId: string
+  boardName: string
   clientId: string
   userId: string
   authorName: string
@@ -31,11 +35,15 @@ type BoardSyncInnerProps = {
   showMinimap: boolean
   onOpenComments: (shapeId: string | null) => void
   onOpenHistory: () => void
+  showPresentation: boolean
+  onStartPresentation: () => void
+  onEndPresentation: () => void
   initialTemplate?: TemplateName | undefined
 }
 
 export function BoardSyncInner({
   boardId,
+  boardName,
   clientId,
   userId,
   authorName,
@@ -44,10 +52,14 @@ export function BoardSyncInner({
   showMinimap,
   onOpenComments,
   onOpenHistory,
+  showPresentation,
+  onStartPresentation,
+  onEndPresentation,
   initialTemplate,
 }: BoardSyncInnerProps) {
   const editor = useEditor()
   const [isMobile, setIsMobile] = useState(false)
+  const [followingUserId, setFollowingUserId] = useState<string | null>(null)
 
   useEffect(() => {
     function check() {
@@ -58,7 +70,6 @@ export function BoardSyncInner({
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  // 모바일에서는 편집 불가 (읽기 전용)
   useEffect(() => {
     editor.updateInstanceState({ isReadonly: isMobile })
   }, [editor, isMobile])
@@ -69,7 +80,45 @@ export function BoardSyncInner({
   const { comments } = useComments(boardId)
   const { reactions, addReaction, removeReaction } = useReactions(boardId)
 
-  // 현재 페이지의 모든 shape ID 목록 (반응 오버레이 렌더링용)
+  // 팔로우 모드 — 대상 사용자의 뷰포트를 내 에디터에 적용
+  useEffect(() => {
+    if (!followingUserId) return
+    const followed = presences.find((p) => p.userId === followingUserId)
+    if (!followed) {
+      // 팔로우 대상이 나갔을 때 — 다음 틱에 해제 (effect 내 직접 setState 금지)
+      const t = setTimeout(() => setFollowingUserId(null), 0)
+      return () => clearTimeout(t)
+    }
+    if (followed.viewport) {
+      editor.setCamera(followed.viewport, { animation: { duration: 150 } })
+    }
+    return undefined
+  }, [presences, followingUserId, editor])
+
+  // 다른 사용자가 댓글을 달면 toast 알림
+  useEffect(() => {
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`comment-notify-${boardId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'comments', filter: `board_id=eq.${boardId}` },
+        (payload) => {
+          const newComment = payload.new as { author_id: string | null; content: string }
+          if (newComment.author_id && newComment.author_id !== userId) {
+            toast('새 댓글이 달렸습니다', {
+              description: newComment.content.slice(0, 60),
+              duration: 4000,
+            })
+          }
+        }
+      )
+      .subscribe()
+    return () => {
+      channel.unsubscribe()
+    }
+  }, [boardId, userId])
+
   const shapeIds = useValue('shapeIds', () => editor.getCurrentPageShapeIds(), [editor])
 
   function handleAddReaction(shapeId: string, emoji: ReactionEmoji) {
@@ -87,14 +136,22 @@ export function BoardSyncInner({
       ) : (
         <Toolbar
           boardId={boardId}
+          boardName={boardName}
           userId={userId}
           authorName={authorName}
           onToggleMinimap={onToggleMinimap}
           showMinimap={showMinimap}
           onOpenHistory={onOpenHistory}
+          onStartPresentation={onStartPresentation}
         />
       )}
-      <PresenceBar myName={authorName} myColor={userColor} presences={presences} />
+      <PresenceBar
+        myName={authorName}
+        myColor={userColor}
+        presences={presences}
+        followingUserId={followingUserId}
+        onFollow={setFollowingUserId}
+      />
       <CollaboratorCursors presences={presences} />
       <CursorChat boardId={boardId} userId={userId} name={authorName} color={userColor} />
 
@@ -127,6 +184,9 @@ export function BoardSyncInner({
           onRemove={handleRemoveReaction}
         />
       </div>
+
+      {/* 발표 모드 컨트롤 바 */}
+      {showPresentation && <PresentationMode onEnd={onEndPresentation} />}
 
       <OnboardingToast />
     </>

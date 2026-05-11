@@ -38,6 +38,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
       <div className="h-screen w-screen overflow-hidden">
         <BoardCanvas
           boardId={id}
+          boardName={board.name}
           userId={user.id}
           authorName={authorName}
           initialTemplate={initialTemplate}

@@ -1,4 +1,4 @@
-// Supabase Realtime Presence로 커서 위치와 접속자를 동기화하는 훅
+// Supabase Realtime Presence로 커서 위치와 뷰포트를 동기화하는 훅
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
@@ -22,6 +22,14 @@ export function usePresence({ boardId, userId, name, color }: UsePresenceOptions
   const channelRef = useRef<RealtimeChannel | null>(null)
   const [presences, setPresences] = useState<UserPresence[]>([])
   const throttleRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // 현재 presence 상태 스냅샷 — cursor/viewport를 개별로 업데이트하면서 병합 전송
+  const presenceRef = useRef<UserPresence>({
+    userId,
+    name,
+    color,
+    cursor: null,
+    viewport: null,
+  })
 
   useEffect(() => {
     const supabase = createClient()
@@ -31,7 +39,10 @@ export function usePresence({ boardId, userId, name, color }: UsePresenceOptions
     })
     channelRef.current = channel
 
-    const myPresence: UserPresence = { userId, name, color, cursor: null }
+    function track(patch: Partial<UserPresence>) {
+      presenceRef.current = { ...presenceRef.current, ...patch }
+      channel.track(presenceRef.current)
+    }
 
     channel
       .on('presence', { event: 'sync' }, () => {
@@ -43,31 +54,42 @@ export function usePresence({ boardId, userId, name, color }: UsePresenceOptions
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          await channel.track(myPresence)
+          await channel.track(presenceRef.current)
         }
       })
 
-    // 포인터 이동 시 페이지 좌표를 throttle해서 presence 업데이트
+    // 포인터 이동 — 커서 위치 throttle 전송
     function handlePointerMove(e: PointerEvent) {
       if (throttleRef.current) return
       throttleRef.current = setTimeout(() => {
         throttleRef.current = null
         const screenPoint = { x: e.clientX, y: e.clientY }
         const pagePoint = editor.screenToPage(screenPoint)
-        channel.track({ userId, name, color, cursor: { x: pagePoint.x, y: pagePoint.y } })
+        track({ cursor: { x: pagePoint.x, y: pagePoint.y } })
       }, 50)
     }
 
     function handlePointerLeave() {
-      channel.track({ userId, name, color, cursor: null })
+      track({ cursor: null })
     }
 
     const container = editor.getContainer()
     container.addEventListener('pointermove', handlePointerMove)
     container.addEventListener('pointerleave', handlePointerLeave)
 
+    // 카메라 변경 — 200ms 폴링으로 뷰포트 전송 (팔로우 모드용)
+    let lastCamera = editor.getCamera()
+    const cameraInterval = setInterval(() => {
+      const cam = editor.getCamera()
+      if (cam.x !== lastCamera.x || cam.y !== lastCamera.y || cam.z !== lastCamera.z) {
+        lastCamera = cam
+        track({ viewport: { x: cam.x, y: cam.y, z: cam.z } })
+      }
+    }, 200)
+
     return () => {
       if (throttleRef.current) clearTimeout(throttleRef.current)
+      clearInterval(cameraInterval)
       container.removeEventListener('pointermove', handlePointerMove)
       container.removeEventListener('pointerleave', handlePointerLeave)
       channel.unsubscribe()

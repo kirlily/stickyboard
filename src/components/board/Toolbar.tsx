@@ -16,6 +16,8 @@ import {
   Vote,
   History,
   Network,
+  SquareDashed,
+  Monitor,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ShareModal } from './ShareModal'
@@ -26,6 +28,7 @@ import {
   createStickyNote,
   createTimer,
   createPoll,
+  createSection,
 } from '@/lib/tldraw/customShapes'
 import { applyMindmapLayout } from '@/lib/tldraw/mindmapLayout'
 import { cn } from '@/lib/utils'
@@ -50,18 +53,22 @@ type ToolbarProps = {
   boardId: string
   userId: string
   authorName: string
+  boardName: string
   onToggleMinimap: () => void
   showMinimap: boolean
   onOpenHistory: () => void
+  onStartPresentation: () => void
 }
 
 export function Toolbar({
   boardId,
   userId,
   authorName,
+  boardName,
   onToggleMinimap,
   showMinimap,
   onOpenHistory,
+  onStartPresentation,
 }: ToolbarProps) {
   const editor = useEditor()
   const [selectedColor, setSelectedColor] = useState<StickyColor>('yellow')
@@ -104,6 +111,15 @@ export function Toolbar({
     if (!applied) toast.info('화살표로 연결된 도형이 없습니다.')
   }
 
+  function addSection() {
+    const viewportCenter = editor.getViewportScreenCenter()
+    const canvasPoint = editor.screenToPage(viewportCenter)
+    const shape = createSection({ x: canvasPoint.x - 320, y: canvasPoint.y - 210 })
+    editor.createShape(shape)
+    // 섹션은 다른 도형 뒤에 위치하도록 맨 아래로 이동
+    editor.sendToBack([shape.id])
+  }
+
   async function exportPng() {
     const shapes = editor.getCurrentPageShapes()
     if (shapes.length === 0) return
@@ -121,6 +137,13 @@ export function Toolbar({
   return (
     <>
       <div className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-xl border bg-white px-2 py-1.5 shadow-md dark:border-neutral-700 dark:bg-neutral-900">
+        {/* 보드 이름 */}
+        <span className="max-w-[120px] truncate px-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
+          {boardName}
+        </span>
+
+        <div className="bg-border mx-1 h-5 w-px" />
+
         {/* Undo / Redo */}
         <Button
           variant="ghost"
@@ -225,6 +248,18 @@ export function Toolbar({
           <span className="text-xs">투표</span>
         </Button>
 
+        {/* 섹션/프레임 추가 */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={addSection}
+          className="gap-1.5 px-2.5"
+          title="섹션 추가 — 영역 구분 및 발표 모드에서 활용"
+        >
+          <SquareDashed className="h-4 w-4" />
+          <span className="text-xs">섹션</span>
+        </Button>
+
         {/* 마인드맵 레이아웃 */}
         <Button
           variant="ghost"
@@ -275,6 +310,18 @@ export function Toolbar({
         >
           <Share2 className="h-4 w-4" />
           <span className="text-xs">공유</span>
+        </Button>
+
+        {/* 발표 모드 */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onStartPresentation}
+          className="gap-1.5 px-2.5"
+          title="발표 모드 — 섹션 순서대로 이동"
+        >
+          <Monitor className="h-4 w-4" />
+          <span className="text-xs">발표</span>
         </Button>
 
         {/* 히스토리 */}

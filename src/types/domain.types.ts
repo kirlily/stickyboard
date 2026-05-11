@@ -61,4 +61,5 @@ export type UserPresence = {
   name: string
   color: string
   cursor: { x: number; y: number } | null
+  viewport: { x: number; y: number; z: number } | null
 }

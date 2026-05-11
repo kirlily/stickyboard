@@ -13,15 +13,23 @@ import type { TemplateName } from '@/lib/tldraw/templates'
 
 type BoardCanvasProps = {
   boardId: string
+  boardName: string
   userId: string
   authorName: string
   initialTemplate?: TemplateName | undefined
 }
 
-export function BoardCanvas({ boardId, userId, authorName, initialTemplate }: BoardCanvasProps) {
+export function BoardCanvas({
+  boardId,
+  boardName,
+  userId,
+  authorName,
+  initialTemplate,
+}: BoardCanvasProps) {
   const [showMinimap, setShowMinimap] = useState(true)
   const [commentShapeId, setCommentShapeId] = useState<string | null | undefined>(undefined)
   const [showHistory, setShowHistory] = useState(false)
+  const [showPresentation, setShowPresentation] = useState(false)
   // commentShapeId: undefined = 패널 닫힘, null = 전체 댓글, string = shape별 댓글
   const clientId = useId()
   const userColor = pickPresenceColor(userId)
@@ -47,6 +55,7 @@ export function BoardCanvas({ boardId, userId, authorName, initialTemplate }: Bo
         <Tldraw shapeUtils={customShapeUtils} components={components}>
           <BoardSyncInner
             boardId={boardId}
+            boardName={boardName}
             clientId={clientId}
             userId={userId}
             authorName={authorName}
@@ -55,6 +64,9 @@ export function BoardCanvas({ boardId, userId, authorName, initialTemplate }: Bo
             showMinimap={showMinimap}
             onOpenComments={handleOpenComments}
             onOpenHistory={() => setShowHistory(true)}
+            showPresentation={showPresentation}
+            onStartPresentation={() => setShowPresentation(true)}
+            onEndPresentation={() => setShowPresentation(false)}
             initialTemplate={initialTemplate}
           />
         </Tldraw>
