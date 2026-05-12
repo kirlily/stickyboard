@@ -16,7 +16,7 @@ export async function GET() {
   const db = createAdminClient()
   const { data, error } = await db
     .from('boards')
-    .select('id, name, created_by, created_at, updated_at')
+    .select('id, name, thumbnail_url, created_by, created_at, updated_at')
     .order('updated_at', { ascending: false })
 
   if (error)
