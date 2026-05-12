@@ -24,7 +24,7 @@ export function OnboardingToast() {
       <div className="max-w-xs rounded-xl border bg-white/95 p-4 shadow-xl backdrop-blur-sm dark:border-neutral-700 dark:bg-neutral-900/95">
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <p className="mb-2 font-semibold">StickyBoard 사용법</p>
+            <p className="mb-2 font-semibold">YujaJam 사용법</p>
             <ul className="text-muted-foreground space-y-1 text-sm">
               <li>상단 스티키 버튼으로 포스트잇 추가</li>
               <li>

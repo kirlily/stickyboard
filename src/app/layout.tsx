@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'StickyBoard',
+  title: 'YujaJam',
   description: 'FigJam 스타일 실시간 협업 화이트보드',
 }
 

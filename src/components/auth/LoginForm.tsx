@@ -35,7 +35,7 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-sm rounded-xl border bg-white p-8 shadow-sm">
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold">StickyBoard</h1>
+        <h1 className="text-2xl font-bold">YujaJam</h1>
         <p className="text-muted-foreground mt-1 text-sm">로그인하여 보드를 시작하세요.</p>
       </div>
 
