@@ -76,12 +76,20 @@ export function useBoardSync(boardId: string, clientId: string, initialTemplate?
       const shapes = editor.getCurrentPageShapes()
       if (shapes.length > 0) {
         try {
-          const result = await editor.toImage(shapes, { format: 'png', scale: 0.3 })
+          const shapeIds = shapes.map((s) => s.id)
+          const result = await editor.toImage(shapeIds, { format: 'png', scale: 0.3 })
           const fd = new FormData()
           fd.append('file', result.blob, 'thumbnail.png')
-          await fetch(`/api/boards/${boardId}/thumbnail`, { method: 'POST', body: fd })
-        } catch {
-          // 썸네일 생성 실패는 무시
+          const thumbRes = await fetch(`/api/boards/${boardId}/thumbnail`, {
+            method: 'POST',
+            body: fd,
+          })
+          if (!thumbRes.ok) {
+            const errBody = await thumbRes.json().catch(() => ({}))
+            console.error('[useBoardSync] thumbnail API error:', thumbRes.status, errBody)
+          }
+        } catch (thumbErr) {
+          console.error('[useBoardSync] thumbnail generation failed:', thumbErr)
         }
       }
     }
