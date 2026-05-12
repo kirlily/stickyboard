@@ -1,7 +1,6 @@
 // 투표 위젯 ShapeUtil — 질문, 선택지별 바 차트, 사용자 투표 추적
-import { BaseBoxShapeUtil, HTMLContainer, RecordPropsType, T, TLShape, createShapeId } from 'tldraw'
+import { BaseBoxShapeUtil, HTMLContainer, T, TLBaseShape, createShapeId } from 'tldraw'
 import type { RecordProps } from '@tldraw/tlschema'
-import type { TLIndicatorPath } from '@tldraw/editor'
 
 interface PollShapeProps {
   w: number
@@ -11,13 +10,7 @@ interface PollShapeProps {
   userVotes: string
 }
 
-declare module '@tldraw/tlschema' {
-  interface TLGlobalShapePropsMap {
-    poll: PollShapeProps
-  }
-}
-
-export type PollShape = Extract<TLShape, { type: 'poll' }>
+export type PollShape = TLBaseShape<'poll', PollShapeProps>
 
 const pollShapeProps: RecordProps<PollShape> = {
   w: T.number,
@@ -26,8 +19,6 @@ const pollShapeProps: RecordProps<PollShape> = {
   options: T.string,
   userVotes: T.string,
 }
-
-export type PollShapePropsType = RecordPropsType<typeof pollShapeProps>
 
 function parseOptions(json: string): string[] {
   try {
@@ -208,12 +199,8 @@ export class PollShapeUtil extends BaseBoxShapeUtil<PollShape> {
     )
   }
 
-  override getIndicatorPath(shape: PollShape): TLIndicatorPath | undefined {
-    const { w, h } = shape.props
-    const r = 16
-    return new Path2D(
-      `M ${r},0 H ${w - r} Q ${w},0 ${w},${r} V ${h - r} Q ${w},${h} ${w - r},${h} H ${r} Q 0,${h} 0,${h - r} V ${r} Q 0,0 ${r},0 Z`
-    )
+  override indicator(shape: PollShape) {
+    return <rect width={shape.props.w} height={shape.props.h} rx={16} />
   }
 }
 

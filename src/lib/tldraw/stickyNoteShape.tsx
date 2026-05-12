@@ -1,7 +1,6 @@
 // 커스텀 스티키 노트 ShapeUtil — 12색 팔레트, 작성자 표시, 텍스트 자동 크기
-import { BaseBoxShapeUtil, HTMLContainer, RecordPropsType, T, TLShape, createShapeId } from 'tldraw'
+import { BaseBoxShapeUtil, HTMLContainer, T, TLBaseShape, createShapeId } from 'tldraw'
 import type { RecordProps } from '@tldraw/tlschema'
-import type { TLIndicatorPath } from '@tldraw/editor'
 
 export const STICKY_COLORS = {
   yellow: { bg: '#FFF176', border: '#F9A825', text: '#212121' },
@@ -28,15 +27,7 @@ interface StickyNoteShapeProps {
   authorName: string
 }
 
-// Register custom shape type in tldraw's global shape map
-declare module '@tldraw/tlschema' {
-  interface TLGlobalShapePropsMap {
-    'sticky-note': StickyNoteShapeProps
-  }
-}
-
-// Extract the shape type from the global TLShape union after augmentation
-export type StickyNoteShape = Extract<TLShape, { type: 'sticky-note' }>
+export type StickyNoteShape = TLBaseShape<'sticky-note', StickyNoteShapeProps>
 
 const stickyNoteShapeProps: RecordProps<StickyNoteShape> = {
   w: T.number,
@@ -45,8 +36,6 @@ const stickyNoteShapeProps: RecordProps<StickyNoteShape> = {
   text: T.string,
   authorName: T.string,
 }
-
-export type StickyNoteShapePropsType = RecordPropsType<typeof stickyNoteShapeProps>
 
 export class StickyNoteShapeUtil extends BaseBoxShapeUtil<StickyNoteShape> {
   static override type = 'sticky-note' as const
@@ -148,12 +137,8 @@ export class StickyNoteShapeUtil extends BaseBoxShapeUtil<StickyNoteShape> {
     )
   }
 
-  override getIndicatorPath(shape: StickyNoteShape): TLIndicatorPath | undefined {
-    const { w, h } = shape.props
-    const r = 8
-    return new Path2D(
-      `M ${r},0 H ${w - r} Q ${w},0 ${w},${r} V ${h - r} Q ${w},${h} ${w - r},${h} H ${r} Q 0,${h} 0,${h - r} V ${r} Q 0,0 ${r},0 Z`
-    )
+  override indicator(shape: StickyNoteShape) {
+    return <rect width={shape.props.w} height={shape.props.h} rx={8} />
   }
 }
 

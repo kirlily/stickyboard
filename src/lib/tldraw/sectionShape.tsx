@@ -1,9 +1,8 @@
 // 보드 영역을 구분하는 섹션 프레임 ShapeUtil — 발표 모드와 연동
 'use client'
 
-import { BaseBoxShapeUtil, HTMLContainer, T, TLShape, createShapeId } from 'tldraw'
+import { BaseBoxShapeUtil, HTMLContainer, T, TLBaseShape, createShapeId } from 'tldraw'
 import type { RecordProps } from '@tldraw/tlschema'
-import type { TLIndicatorPath } from '@tldraw/editor'
 import { useState } from 'react'
 
 export type SectionColor = 'blue' | 'purple' | 'green' | 'yellow' | 'pink' | 'gray'
@@ -15,13 +14,7 @@ interface SectionShapeProps {
   color: string
 }
 
-declare module '@tldraw/tlschema' {
-  interface TLGlobalShapePropsMap {
-    section: SectionShapeProps
-  }
-}
-
-export type SectionShape = Extract<TLShape, { type: 'section' }>
+export type SectionShape = TLBaseShape<'section', SectionShapeProps>
 
 const sectionShapeProps: RecordProps<SectionShape> = {
   w: T.number,
@@ -179,12 +172,8 @@ export class SectionShapeUtil extends BaseBoxShapeUtil<SectionShape> {
     )
   }
 
-  override getIndicatorPath(shape: SectionShape): TLIndicatorPath | undefined {
-    const { w, h } = shape.props
-    const r = 12
-    return new Path2D(
-      `M ${r},0 H ${w - r} Q ${w},0 ${w},${r} V ${h - r} Q ${w},${h} ${w - r},${h} H ${r} Q 0,${h} 0,${h - r} V ${r} Q 0,0 ${r},0 Z`
-    )
+  override indicator(shape: SectionShape) {
+    return <rect width={shape.props.w} height={shape.props.h} rx={12} />
   }
 }
 

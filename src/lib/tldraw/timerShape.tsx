@@ -1,7 +1,6 @@
 // 타이머 위젯 ShapeUtil — 원형 SVG 카운트다운, 시작/일시정지/리셋 버튼
-import { BaseBoxShapeUtil, HTMLContainer, RecordPropsType, T, TLShape, createShapeId } from 'tldraw'
+import { BaseBoxShapeUtil, HTMLContainer, T, TLBaseShape, createShapeId } from 'tldraw'
 import type { RecordProps } from '@tldraw/tlschema'
-import type { TLIndicatorPath } from '@tldraw/editor'
 import { useState, useEffect } from 'react'
 
 interface TimerShapeProps {
@@ -12,13 +11,7 @@ interface TimerShapeProps {
   elapsed: number
 }
 
-declare module '@tldraw/tlschema' {
-  interface TLGlobalShapePropsMap {
-    timer: TimerShapeProps
-  }
-}
-
-export type TimerShape = Extract<TLShape, { type: 'timer' }>
+export type TimerShape = TLBaseShape<'timer', TimerShapeProps>
 
 const timerShapeProps: RecordProps<TimerShape> = {
   w: T.number,
@@ -27,8 +20,6 @@ const timerShapeProps: RecordProps<TimerShape> = {
   startedAt: T.string,
   elapsed: T.number,
 }
-
-export type TimerShapePropsType = RecordPropsType<typeof timerShapeProps>
 
 const RADIUS = 54
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
@@ -246,12 +237,8 @@ export class TimerShapeUtil extends BaseBoxShapeUtil<TimerShape> {
     )
   }
 
-  override getIndicatorPath(shape: TimerShape): TLIndicatorPath | undefined {
-    const { w, h } = shape.props
-    const r = 16
-    return new Path2D(
-      `M ${r},0 H ${w - r} Q ${w},0 ${w},${r} V ${h - r} Q ${w},${h} ${w - r},${h} H ${r} Q 0,${h} 0,${h - r} V ${r} Q 0,0 ${r},0 Z`
-    )
+  override indicator(shape: TimerShape) {
+    return <rect width={shape.props.w} height={shape.props.h} rx={16} />
   }
 }
 
