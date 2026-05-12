@@ -163,7 +163,7 @@ export function BoardSyncInner({
       </div>
 
       {/* shape별 댓글 핀 */}
-      <div className="pointer-events-auto absolute inset-0 overflow-hidden" style={{ zIndex: 360 }}>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" style={{ zIndex: 360 }}>
         {Array.from(shapeIds).map((id) => (
           <CommentPin
             key={id as string}
@@ -175,7 +175,7 @@ export function BoardSyncInner({
       </div>
 
       {/* hover 반응 팝오버 */}
-      <div className="pointer-events-auto absolute inset-0 overflow-hidden" style={{ zIndex: 400 }}>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" style={{ zIndex: 400 }}>
         <ReactionPanel
           boardId={boardId}
           userId={userId}

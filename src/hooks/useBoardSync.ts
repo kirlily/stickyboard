@@ -36,9 +36,19 @@ export function useBoardSync(boardId: string, clientId: string, initialTemplate?
         try {
           editor.loadSnapshot(json.data as TLStoreSnapshot)
         } catch (err) {
-          // 손상된 스냅샷 — 빈 캔버스에서 시작
+          // 손상된 스냅샷(버전 불일치 등) — 빈 캔버스에서 시작하고 DB 스냅샷도 초기화
           console.error('[useBoardSync] loadSnapshot failed:', err)
           toast.error('보드 데이터를 불러오지 못했습니다. 새 보드로 시작합니다.')
+          try {
+            const freshSnapshot = editor.getSnapshot()
+            await fetch(`/api/boards/${boardId}/snapshot`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(freshSnapshot),
+            })
+          } catch {
+            // 초기화 실패는 무시 — 다음 자동 저장에서 재시도
+          }
         }
       } else if (initialTemplate) {
         try {
