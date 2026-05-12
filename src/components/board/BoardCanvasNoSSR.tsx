@@ -4,9 +4,25 @@
 import dynamic from 'next/dynamic'
 import type { TemplateName } from '@/lib/tldraw/templates'
 
+function CanvasLoading() {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f8f9fa',
+      }}
+    >
+      <p style={{ color: '#888', fontSize: 14 }}>보드 불러오는 중...</p>
+    </div>
+  )
+}
+
 const BoardCanvas = dynamic(
   () => import('./BoardCanvas').then((m) => ({ default: m.BoardCanvas })),
-  { ssr: false }
+  { ssr: false, loading: CanvasLoading }
 )
 
 type Props = {
