@@ -19,9 +19,11 @@ export async function POST(req: Request, { params }: Params) {
   if (!file) return NextResponse.json({ data: null, error: 'No file' }, { status: 400 })
 
   const path = `thumbnails/${id}.png`
+  // UPDATE 정책 없음 — 기존 파일 삭제 후 새로 업로드
+  await supabase.storage.from('board-images').remove([path])
   const { error: uploadError } = await supabase.storage
     .from('board-images')
-    .upload(path, file, { upsert: true, contentType: 'image/png' })
+    .upload(path, file, { contentType: 'image/png' })
 
   if (uploadError)
     return NextResponse.json({ data: null, error: uploadError.message }, { status: 500 })
