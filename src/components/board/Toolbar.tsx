@@ -1,7 +1,7 @@
 // 보드 커스텀 툴바 — 스티키 노트 추가, 색상 선택, 미니맵, 내보내기, 공유, 단축키
 'use client'
 
-import { useEditor, useValue } from 'tldraw'
+import { useEditor } from 'tldraw'
 import { useState } from 'react'
 import {
   StickerIcon,
@@ -9,8 +9,6 @@ import {
   Map,
   ChevronDown,
   Share2,
-  Undo2,
-  Redo2,
   Keyboard,
   Timer,
   Vote,
@@ -76,9 +74,6 @@ export function Toolbar({
   const [showShare, setShowShare] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
 
-  const canUndo = useValue('canUndo', () => editor.getCanUndo(), [editor])
-  const canRedo = useValue('canRedo', () => editor.getCanRedo(), [editor])
-
   function addStickyNote() {
     const viewportCenter = editor.getViewportScreenCenter()
     const canvasPoint = editor.screenToPage(viewportCenter)
@@ -141,30 +136,6 @@ export function Toolbar({
         <span className="max-w-[120px] truncate px-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
           {boardName}
         </span>
-
-        <div className="bg-border mx-1 h-5 w-px" />
-
-        {/* Undo / Redo */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={() => editor.undo()}
-          disabled={!canUndo}
-          title="실행 취소 (Ctrl+Z)"
-        >
-          <Undo2 className="h-3.5 w-3.5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={() => editor.redo()}
-          disabled={!canRedo}
-          title="다시 실행 (Ctrl+Y)"
-        >
-          <Redo2 className="h-3.5 w-3.5" />
-        </Button>
 
         <div className="bg-border mx-1 h-5 w-px" />
 

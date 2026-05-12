@@ -44,7 +44,6 @@ export function BoardCanvas({
 
   const components = useMemo<TLComponents>(
     () => ({
-      Toolbar: null,
       ...(showMinimap ? {} : { Minimap: null }),
     }),
     [showMinimap]
