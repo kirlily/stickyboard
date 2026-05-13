@@ -164,7 +164,7 @@ export function Toolbar({
               className="h-4 w-4 rounded-full border-2"
               style={{
                 backgroundColor: currentColor?.bg,
-                borderColor: currentColor?.border,
+                borderColor: currentColor?.accent,
               }}
             />
             <ChevronDown className="ml-0.5 h-2.5 w-2.5" />
@@ -184,7 +184,7 @@ export function Toolbar({
                     'h-6 w-6 rounded-full border-2 transition-transform hover:scale-110',
                     selectedColor === color && 'ring-2 ring-blue-500 ring-offset-1'
                   )}
-                  style={{ backgroundColor: c.bg, borderColor: c.border }}
+                  style={{ backgroundColor: c.bg, borderColor: c.accent }}
                   onClick={() => {
                     setSelectedColor(color)
                     setShowColorPicker(false)

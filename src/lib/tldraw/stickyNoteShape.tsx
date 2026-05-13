@@ -1,20 +1,20 @@
-// 커스텀 스티키 노트 ShapeUtil — 12색 팔레트, 작성자 표시, 텍스트 자동 크기
+// 커스텀 스티키 노트 ShapeUtil — 12색 팔레트, FigJam 스타일, 작성자 뱃지
 import { BaseBoxShapeUtil, HTMLContainer, T, TLBaseShape, createShapeId } from 'tldraw'
 import type { RecordProps } from '@tldraw/tlschema'
 
 export const STICKY_COLORS = {
-  yellow: { bg: '#FFF176', border: '#F9A825', text: '#212121' },
-  orange: { bg: '#FFCC80', border: '#EF6C00', text: '#212121' },
-  pink: { bg: '#F48FB1', border: '#C2185B', text: '#212121' },
-  red: { bg: '#EF9A9A', border: '#C62828', text: '#212121' },
-  purple: { bg: '#CE93D8', border: '#6A1B9A', text: '#212121' },
-  blue: { bg: '#90CAF9', border: '#1565C0', text: '#212121' },
-  cyan: { bg: '#80DEEA', border: '#00838F', text: '#212121' },
-  teal: { bg: '#80CBC4', border: '#00695C', text: '#212121' },
-  green: { bg: '#A5D6A7', border: '#2E7D32', text: '#212121' },
-  lime: { bg: '#E6EE9C', border: '#827717', text: '#212121' },
-  white: { bg: '#FAFAFA', border: '#9E9E9E', text: '#212121' },
-  gray: { bg: '#B0BEC5', border: '#37474F', text: '#212121' },
+  yellow: { bg: '#FFF4A3', accent: '#F59E0B', text: '#1C1917' },
+  orange: { bg: '#FED7AA', accent: '#EA580C', text: '#1C1917' },
+  pink: { bg: '#FBCFE8', accent: '#DB2777', text: '#1C1917' },
+  red: { bg: '#FECACA', accent: '#DC2626', text: '#1C1917' },
+  purple: { bg: '#E9D5FF', accent: '#7C3AED', text: '#1C1917' },
+  blue: { bg: '#BFDBFE', accent: '#2563EB', text: '#1C1917' },
+  cyan: { bg: '#A5F3FC', accent: '#0891B2', text: '#1C1917' },
+  teal: { bg: '#99F6E4', accent: '#0D9488', text: '#1C1917' },
+  green: { bg: '#BBF7D0', accent: '#16A34A', text: '#1C1917' },
+  lime: { bg: '#D9F99D', accent: '#65A30D', text: '#1C1917' },
+  white: { bg: '#FFFFFF', accent: '#6B7280', text: '#1C1917' },
+  gray: { bg: '#E5E7EB', accent: '#374151', text: '#1C1917' },
 } as const
 
 export type StickyColor = keyof typeof STICKY_COLORS
@@ -58,6 +58,7 @@ export class StickyNoteShapeUtil extends BaseBoxShapeUtil<StickyNoteShape> {
   override component(shape: StickyNoteShape) {
     const colors = STICKY_COLORS[shape.props.color] ?? STICKY_COLORS.yellow
     const isEditing = this.editor.getEditingShapeId() === shape.id
+    const initial = shape.props.authorName ? shape.props.authorName.charAt(0).toUpperCase() : ''
 
     return (
       <HTMLContainer
@@ -66,32 +67,22 @@ export class StickyNoteShapeUtil extends BaseBoxShapeUtil<StickyNoteShape> {
           width: shape.props.w,
           height: shape.props.h,
           backgroundColor: colors.bg,
-          border: `2px solid ${colors.border}`,
-          borderRadius: 8,
+          borderRadius: 12,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08)',
           cursor: isEditing ? 'text' : 'default',
         }}
       >
-        {/* 상단 색상 바 */}
-        <div
-          style={{
-            height: 8,
-            backgroundColor: colors.border,
-            flexShrink: 0,
-          }}
-        />
         {/* 텍스트 영역 */}
         <div
           style={{
             flex: 1,
-            padding: '8px 10px',
+            padding: '12px 12px 6px',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
-            gap: 4,
           }}
         >
           <textarea
@@ -101,7 +92,7 @@ export class StickyNoteShapeUtil extends BaseBoxShapeUtil<StickyNoteShape> {
               border: 'none',
               background: 'transparent',
               fontSize: 14,
-              lineHeight: 1.5,
+              lineHeight: 1.6,
               color: colors.text,
               fontFamily: 'inherit',
               outline: 'none',
@@ -118,27 +109,55 @@ export class StickyNoteShapeUtil extends BaseBoxShapeUtil<StickyNoteShape> {
             }}
             placeholder="내용을 입력하세요..."
           />
-          {/* 작성자 표시 */}
-          {shape.props.authorName && (
+        </div>
+
+        {/* 작성자 뱃지 */}
+        {shape.props.authorName && (
+          <div
+            style={{
+              padding: '0 10px 8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              flexShrink: 0,
+            }}
+          >
             <div
               style={{
-                fontSize: 11,
-                color: colors.border,
-                textAlign: 'right',
+                width: 18,
+                height: 18,
+                borderRadius: '50%',
+                backgroundColor: colors.accent,
+                color: '#fff',
+                fontSize: 10,
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 flexShrink: 0,
+              }}
+            >
+              {initial}
+            </div>
+            <span
+              style={{
+                fontSize: 11,
+                color: colors.accent,
                 fontWeight: 500,
+                userSelect: 'none',
+                opacity: 0.85,
               }}
             >
               {shape.props.authorName}
-            </div>
-          )}
-        </div>
+            </span>
+          </div>
+        )}
       </HTMLContainer>
     )
   }
 
   override indicator(shape: StickyNoteShape) {
-    return <rect width={shape.props.w} height={shape.props.h} rx={8} />
+    return <rect width={shape.props.w} height={shape.props.h} rx={12} />
   }
 }
 
