@@ -94,7 +94,7 @@ export class StickyNoteShapeUtil extends BaseBoxShapeUtil<StickyNoteShape> {
               fontSize: 14,
               lineHeight: 1.6,
               color: colors.text,
-              fontFamily: 'inherit',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif',
               outline: 'none',
               cursor: isEditing ? 'text' : 'default',
               pointerEvents: isEditing ? 'all' : 'none',

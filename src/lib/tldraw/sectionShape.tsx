@@ -1,4 +1,4 @@
-// 보드 영역을 구분하는 섹션 프레임 ShapeUtil — 발표 모드와 연동
+// 보드 영역을 구분하는 섹션 프레임 ShapeUtil — FigJam 스타일 라벨 pill
 'use client'
 
 import { BaseBoxShapeUtil, HTMLContainer, T, TLBaseShape, createShapeId } from 'tldraw'
@@ -23,13 +23,46 @@ const sectionShapeProps: RecordProps<SectionShape> = {
   color: T.string,
 }
 
-const SECTION_COLORS: Record<SectionColor, { bg: string; border: string; text: string }> = {
-  blue: { bg: 'rgba(59,130,246,0.07)', border: 'rgba(59,130,246,0.45)', text: '#1d4ed8' },
-  purple: { bg: 'rgba(139,92,246,0.07)', border: 'rgba(139,92,246,0.45)', text: '#6d28d9' },
-  green: { bg: 'rgba(16,185,129,0.07)', border: 'rgba(16,185,129,0.45)', text: '#065f46' },
-  yellow: { bg: 'rgba(245,158,11,0.07)', border: 'rgba(245,158,11,0.45)', text: '#92400e' },
-  pink: { bg: 'rgba(236,72,153,0.07)', border: 'rgba(236,72,153,0.45)', text: '#9d174d' },
-  gray: { bg: 'rgba(107,114,128,0.07)', border: 'rgba(107,114,128,0.45)', text: '#374151' },
+const SECTION_COLORS: Record<
+  SectionColor,
+  { bg: string; border: string; text: string; pill: string }
+> = {
+  blue: {
+    bg: 'rgba(59,130,246,0.05)',
+    border: 'rgba(59,130,246,0.28)',
+    text: '#2563EB',
+    pill: 'rgba(59,130,246,0.12)',
+  },
+  purple: {
+    bg: 'rgba(139,92,246,0.05)',
+    border: 'rgba(139,92,246,0.28)',
+    text: '#7C3AED',
+    pill: 'rgba(139,92,246,0.12)',
+  },
+  green: {
+    bg: 'rgba(16,185,129,0.05)',
+    border: 'rgba(16,185,129,0.28)',
+    text: '#059669',
+    pill: 'rgba(16,185,129,0.12)',
+  },
+  yellow: {
+    bg: 'rgba(245,158,11,0.05)',
+    border: 'rgba(245,158,11,0.28)',
+    text: '#B45309',
+    pill: 'rgba(245,158,11,0.15)',
+  },
+  pink: {
+    bg: 'rgba(236,72,153,0.05)',
+    border: 'rgba(236,72,153,0.28)',
+    text: '#BE185D',
+    pill: 'rgba(236,72,153,0.12)',
+  },
+  gray: {
+    bg: 'rgba(107,114,128,0.05)',
+    border: 'rgba(107,114,128,0.28)',
+    text: '#374151',
+    pill: 'rgba(107,114,128,0.12)',
+  },
 }
 
 const DEFAULT_COLOR: SectionColor = 'blue'
@@ -57,24 +90,27 @@ function SectionDisplay({
         width: shape.props.w,
         height: shape.props.h,
         backgroundColor: c.bg,
-        border: `2px dashed ${c.border}`,
-        borderRadius: 12,
+        border: `1.5px solid ${c.border}`,
+        borderRadius: 16,
         position: 'relative',
         boxSizing: 'border-box',
       }}
     >
-      {/* 타이틀 바 */}
+      {/* 타이틀 pill — 테두리 위에 걸쳐 표시 */}
       <div
         style={{
           position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          padding: '5px 10px',
+          top: -14,
+          left: 14,
           display: 'flex',
           alignItems: 'center',
           gap: 6,
+          backgroundColor: c.pill,
+          border: `1px solid ${c.border}`,
+          borderRadius: 8,
+          padding: '2px 8px 2px 10px',
           pointerEvents: 'all',
+          backdropFilter: 'blur(8px)',
         }}
         onPointerDown={(e) => e.stopPropagation()}
         onDoubleClick={() => {
@@ -101,23 +137,23 @@ function SectionDisplay({
             style={{
               background: 'transparent',
               border: 'none',
-              outline: `1px solid ${c.border}`,
-              borderRadius: 4,
-              padding: '0 4px',
-              fontSize: 13,
-              fontWeight: 700,
+              outline: 'none',
+              fontSize: 12,
+              fontWeight: 600,
               color: c.text,
-              flex: 1,
+              width: 100,
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif',
             }}
           />
         ) : (
           <span
             style={{
-              fontSize: 13,
-              fontWeight: 700,
+              fontSize: 12,
+              fontWeight: 600,
               color: c.text,
               userSelect: 'none',
-              flex: 1,
+              whiteSpace: 'nowrap',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif',
             }}
           >
             {shape.props.title || '섹션'}
@@ -125,19 +161,26 @@ function SectionDisplay({
         )}
 
         {/* 색상 선택 도트 */}
-        <div style={{ display: 'flex', gap: 3 }}>
+        <div style={{ display: 'flex', gap: 3, marginLeft: 2 }}>
           {(Object.keys(SECTION_COLORS) as SectionColor[]).map((col) => (
             <button
               key={col}
               onClick={() => onUpdate({ color: col })}
               style={{
-                width: 10,
-                height: 10,
+                width: 8,
+                height: 8,
                 borderRadius: '50%',
-                backgroundColor: SECTION_COLORS[col].border,
-                border: shape.props.color === col ? '2px solid #1a1a1a' : '1px solid transparent',
+                backgroundColor: SECTION_COLORS[col].text,
+                border:
+                  shape.props.color === col
+                    ? `2px solid ${SECTION_COLORS[col].text}`
+                    : '1.5px solid transparent',
+                outline: shape.props.color === col ? '1.5px solid white' : 'none',
+                outlineOffset: -2,
                 cursor: 'pointer',
                 padding: 0,
+                opacity: shape.props.color === col ? 1 : 0.45,
+                transition: 'opacity 0.15s',
               }}
             />
           ))}
@@ -173,7 +216,7 @@ export class SectionShapeUtil extends BaseBoxShapeUtil<SectionShape> {
   }
 
   override indicator(shape: SectionShape) {
-    return <rect width={shape.props.w} height={shape.props.h} rx={12} />
+    return <rect width={shape.props.w} height={shape.props.h} rx={16} />
   }
 }
 
