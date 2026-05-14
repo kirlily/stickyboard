@@ -131,13 +131,13 @@ export function Toolbar({
 
   return (
     <>
-      <div className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-xl border bg-white px-2 py-1.5 shadow-md dark:border-neutral-700 dark:bg-neutral-900">
+      <div className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0.5 rounded-xl border bg-white px-1.5 py-1.5 shadow-md lg:gap-1 lg:px-2 dark:border-neutral-700 dark:bg-neutral-900">
         {/* 보드 이름 */}
-        <span className="max-w-[120px] truncate px-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
+        <span className="max-w-[80px] truncate px-1 text-xs font-semibold text-gray-700 lg:max-w-[120px] dark:text-gray-300">
           {boardName}
         </span>
 
-        <div className="bg-border mx-1 h-5 w-px" />
+        <div className="bg-border mx-0.5 h-5 w-px lg:mx-1" />
 
         {/* 스티키 노트 추가 버튼 */}
         <div className="flex items-center">
@@ -145,11 +145,11 @@ export function Toolbar({
             variant="ghost"
             size="sm"
             onClick={addStickyNote}
-            className="gap-1.5 px-2.5"
+            className="gap-1.5 px-2 lg:px-2.5"
             title="스티키 노트 추가 (뷰포트 중앙)"
           >
             <StickerIcon className="h-4 w-4" />
-            <span className="text-xs">스티키</span>
+            <span className="hidden text-xs lg:inline">스티키</span>
           </Button>
 
           {/* 색상 선택 드롭다운 트리거 */}
@@ -200,11 +200,11 @@ export function Toolbar({
           variant="ghost"
           size="sm"
           onClick={addTimer}
-          className="gap-1.5 px-2.5"
+          className="gap-1.5 px-2 lg:px-2.5"
           title="타이머 추가"
         >
           <Timer className="h-4 w-4" />
-          <span className="text-xs">타이머</span>
+          <span className="hidden text-xs lg:inline">타이머</span>
         </Button>
 
         {/* 투표 위젯 */}
@@ -212,11 +212,11 @@ export function Toolbar({
           variant="ghost"
           size="sm"
           onClick={addPoll}
-          className="gap-1.5 px-2.5"
+          className="gap-1.5 px-2 lg:px-2.5"
           title="투표 추가"
         >
           <Vote className="h-4 w-4" />
-          <span className="text-xs">투표</span>
+          <span className="hidden text-xs lg:inline">투표</span>
         </Button>
 
         {/* 섹션/프레임 추가 */}
@@ -224,11 +224,11 @@ export function Toolbar({
           variant="ghost"
           size="sm"
           onClick={addSection}
-          className="gap-1.5 px-2.5"
+          className="gap-1.5 px-2 lg:px-2.5"
           title="섹션 추가 — 영역 구분 및 발표 모드에서 활용"
         >
           <SquareDashed className="h-4 w-4" />
-          <span className="text-xs">섹션</span>
+          <span className="hidden text-xs lg:inline">섹션</span>
         </Button>
 
         {/* 마인드맵 레이아웃 */}
@@ -236,25 +236,25 @@ export function Toolbar({
           variant="ghost"
           size="sm"
           onClick={applyLayout}
-          className="gap-1.5 px-2.5"
+          className="gap-1.5 px-2 lg:px-2.5"
           title="마인드맵 자동 레이아웃"
         >
           <Network className="h-4 w-4" />
-          <span className="text-xs">레이아웃</span>
+          <span className="hidden text-xs lg:inline">레이아웃</span>
         </Button>
 
-        <div className="bg-border mx-1 h-5 w-px" />
+        <div className="bg-border mx-0.5 h-5 w-px lg:mx-1" />
 
         {/* 미니맵 토글 */}
         <Button
           variant={showMinimap ? 'secondary' : 'ghost'}
           size="sm"
           onClick={onToggleMinimap}
-          className="gap-1.5 px-2.5"
+          className="gap-1.5 px-2 lg:px-2.5"
           title="미니맵 토글"
         >
           <Map className="h-4 w-4" />
-          <span className="text-xs">맵</span>
+          <span className="hidden text-xs lg:inline">맵</span>
         </Button>
 
         {/* PNG 내보내기 */}
@@ -262,25 +262,25 @@ export function Toolbar({
           variant="ghost"
           size="sm"
           onClick={exportPng}
-          className="gap-1.5 px-2.5"
+          className="gap-1.5 px-2 lg:px-2.5"
           title="PNG로 내보내기"
         >
           <Download className="h-4 w-4" />
-          <span className="text-xs">내보내기</span>
+          <span className="hidden text-xs lg:inline">내보내기</span>
         </Button>
 
-        <div className="bg-border mx-1 h-5 w-px" />
+        <div className="bg-border mx-0.5 h-5 w-px lg:mx-1" />
 
         {/* 공유 */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setShowShare(true)}
-          className="gap-1.5 px-2.5"
+          className="gap-1.5 px-2 lg:px-2.5"
           title="공유 및 멤버 관리"
         >
           <Share2 className="h-4 w-4" />
-          <span className="text-xs">공유</span>
+          <span className="hidden text-xs lg:inline">공유</span>
         </Button>
 
         {/* 발표 모드 */}
@@ -288,11 +288,11 @@ export function Toolbar({
           variant="ghost"
           size="sm"
           onClick={onStartPresentation}
-          className="gap-1.5 px-2.5"
+          className="gap-1.5 px-2 lg:px-2.5"
           title="발표 모드 — 섹션 순서대로 이동"
         >
           <Monitor className="h-4 w-4" />
-          <span className="text-xs">발표</span>
+          <span className="hidden text-xs lg:inline">발표</span>
         </Button>
 
         {/* 히스토리 */}

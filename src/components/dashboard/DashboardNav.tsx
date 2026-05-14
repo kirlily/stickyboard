@@ -20,7 +20,7 @@ export function DashboardNav() {
   }
 
   return (
-    <header className="bg-background flex h-14 items-center justify-between border-b px-6">
+    <header className="bg-background flex h-14 items-center justify-between border-b px-4 sm:px-6">
       <button
         className="flex items-center gap-2 font-semibold transition-opacity hover:opacity-70"
         onClick={() => router.push('/')}
